@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>FOP Project</title>
+{% endblock %}
+
+{% block body %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="alert alert-info alert-dismissible fade show mb-0 px-5" role='alert'>
+    {% for message in messages %}
+    <p class="lead m-0 container me-2">{{ message }}</p>
+{% endfor %}
+<button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
+</div>
+{% endif %}
+{% endwith %}
+<div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
+    <p class="container lead mb-0"><strong>DISCLAIMER:</strong> This is <strong>NOT</strong> an official website!</p>
+    <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
+</div>
+<section class="bg-dark text-light p-5 text-center text-sm-start">
+    <div class="container">
+        <div class="d-sm-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="text-warning">Hello World!</h1>
+                <p class="lead my-4">This website is to provide a platform for Year 1 Computer Sciece students from
+                    University of
+                    Malaya
+                    to showcase their group projects for WIX1002 Fundamental of Programming</p>
+            </div>
+            <img class="img-fluid w-50 d-none d-sm-block ms-md-5" src="../static/images/meeting.svg"
+                alt="Picture of meeting">
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <h1 class="text-center m-5 text-dark display-3">Year 21/22</h1>
+    <div class="row mb-5 text-center">
+        {% for prj in projects %}
+        <div class="col-lg mb-5">
+            <div class="card text-center min-vw-80">
+                <div class="card-body text-center">
+                    <h3 class="card-title p-3">{{prj["project"]}}</h3>
+                    <p class="card-text">{{prj["desc"]}}</p>
+                    <a href="#" class="btn btn-primary">
+                        See projects
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

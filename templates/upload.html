@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Upload Project</title>
+{% endblock %}
+
+{% block body %}
+{% if errors %}
+<!-- <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastPlacement"></div> -->
+{% for err in errors %}
+    <div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
+    <p class="m-0 container">{{ err }}</p>
+    <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
+    </div>
+<!-- <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="true"></div>
+    <div class="toast-header">
+        <strong class="me-auto">Error</strong>
+        <button type="button" class="btn-close" onclick=hideToast() data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+        {{err}}
+    </div>
+</div> -->
+{% endfor %}
+<!-- </div> -->
+{% endif %}
+<section class="bg-light">
+    <div class='text-dark container p-0 p-lg-5 my-5 rounded'>
+        <h1 class="d-lg-none d-block text-center mb-5 display-3">Fill in Form</h1>
+        <div class="d-lg-flex align-items-center justify-content-center">
+            <div class="d-none d-lg-block col-5">
+                <p class="h1 mb-2 display-3">Welcome!</p>
+                <p class="h3 mb-5">First, please fill in the form</p>
+                <img src="../static/images/form.svg" alt="filling form" class="img-fluid pe-5">
+            </div>
+            <form action="/submitForm" class="bg-dark text-light p-5 rounded col-lg-7" method="POST">
+                <div class="mb-3">
+                    <label for="teamName" class="form-label">Team Name</label>
+                    <input type='text' class="form-control" name="teamName" id="teamName"
+                        aria-label="What's your team name?" placeholder="3-20 characters" maxlength="10" minlength="3"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="selectProject" class="form-label">Project</label>
+                    <select id="selectProject" class="form-select" name="selectProject"
+                        aria-label="What is your project?" required>
+                        {% for proj in projects %}
+                        <option value='{{proj["project"]}}'>{{proj["project"]}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="teamMembers" class="form-label">Team Members</label>
+                    <div id="teamMembers">
+                        <input type="text" class='form-control mb-3' name="teamMembers[0]"
+                            aria-label="Who are your team members?" minlength="2" maxlength="25"
+                            placeholder="2-25 characters" required>
+                    </div>
+                    <button class="btn btn-primary mb-3" id="addMember" type="button">Add</button>
+                </div>
+                <div class="mb-3">
+                    <label for="githubLink" class="form-label">GitHub Repo Link</label>
+                    <div class="input-group">
+                        <span class="input-group-text">https://github.com/</span>
+                        <input type="text" class="form-control" id="githubURL" name="githubURL"
+                            placeholder="username/fopProject">
+                    </div>
+                    <div class="form-text">If you wish to share your source code</div>
+                </div>
+                <div class="mb-3">
+                    <label for="videoLink" class="form-label">Demo Video link</label>
+                    <div class="input-group">
+                        <span class="input-group-text">https://youtu.be/</span>
+                        <input type="text" class="form-control" id="videoLink" name="videoLink" placeholder="example"
+                            required>
+                    </div>
+                    <div class="form-text">Either unlisted or public link is accepted.</div>
+                </div>
+                <div class="mb-3  position-relative">
+                    <label for="projectDescription" class="form-label">Description</label>
+                    <textarea id="projectDescription" style="resize:none" name="projectDescription" cols="30" rows="10"
+                        class="form-control" maxlength="500" minlengh="20" required></textarea>
+                    <div class="form-text position-absolute end-0" id="charCount">0</div>
+                    <div class="form-text">Between 20-500 characters</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+    // set 'upload' in navbar as active
+    document.getElementById('home').classList.toggle("active");
+    document.getElementById('upload').classList.toggle("active");
+    // document.getElementById("charCount").innerHTML = projectDescription.value.length
+
+    let memberDiv = document.getElementById("teamMembers");
+    let addMember = document.getElementById("addMember");
+    let projectName = document.getElementById("selectProject");
+    let projectDescription = document.getElementById("projectDescription");
+
+    teamName.addEventListener("blur", function () {
+        let text = teamName.value
+        if (text.length < 3 || text.length > 10) {
+            this.classList.add("invalid")
+        }
+    })
+
+    addMember.addEventListener("click", function () {
+        // <div class="input-group mb-3">
+        //  <input type="text" class='form-control' aria-label="Who are your team members?">
+        //  <button class="btn btn-danger">Remove</button>
+        // </div>
+        let div = document.createElement("div")
+        div.classList.add("input-group", "mb-3")
+
+        let input = document.createElement("input")
+        input.classList.add("form-control")
+        input.type = "text"
+        input.ariaLabel = "Who are your team members?"
+        input.required = true;
+        input.minLength = "2";
+        input.maxLength = "25";
+        input.name = `teamMembers[${memberDiv.childElementCount}]`
+
+        let btn = document.createElement("button")
+        btn.innerHTML = "Remove"
+        btn.type = "button"
+        btn.classList.add("btn", "btn-danger")
+        btn.onclick = function () {
+            let div = this.parentElement;
+            memberDiv.removeChild(div)
+            addMember.disabled = false
+        };
+
+        div.appendChild(input)
+        div.appendChild(btn)
+        memberDiv.appendChild(div)
+
+        if (memberDiv.childElementCount == 6) {
+            addMember.disabled = true
+        }
+    })
+
+    projectDescription.addEventListener("keyup", function () {
+        console.log(document.getElementById("selectProject").value)
+        document.getElementById("charCount").innerHTML = this.value.length
+    })
+
+    // function hideToast() {
+    //     document.querySelectorAll(".toast")
+    //     toast = document.getElementById("toastPlacement")
+    //     toast.classList.add("hide")
+    //     // toasts[i].classList.remove("show")
+    // }
+    // let toasts = document.getElementsByClassName("toast")
+    // // let toasteds=[]
+    // if(toasts){
+    //     for(var i=0; i<toasts.length; i++){} {
+    //         toast = toasts[i]
+    //         toast=new bootstrap.Toast(toast)
+    //         toast.show()
+    //     }
+    // }
+</script>
+{% endblock %}
