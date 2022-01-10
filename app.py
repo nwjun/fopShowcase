@@ -1,4 +1,4 @@
-from flask import Flask, g, json, redirect, flash
+from flask import Flask,session, redirect, flash
 from flask.helpers import flash
 from jinja2 import Template
 from flask import render_template, url_for,request
@@ -9,6 +9,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 
 from Team import Team
+from OptionalValidation import OptionalButNotEmpty
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -57,8 +58,8 @@ def upload():
 
 class RegistrationForm(Form):
     teamName = StringField('Team Name', [validators.Length(min=3, max=10)])
-    githubLink = StringField('GitHub Repo Link', [validators.Optional(), validators.Length(min=5)])
-    videoLink = StringField('Demo Video link', [validators.Length(min=5)])
+    githubLink = StringField('GitHub Repo Link', [validators.Optional(), validators.Length(min=5, message="Github link must be at least 5 characters long")])
+    videoLink = StringField('Demo Video link', [validators.Length(min=5, message="Demo video link must be at least 5 characters long")])
 
 def validation(teamMembers, description, projectName):
     errors=[]
@@ -68,7 +69,7 @@ def validation(teamMembers, description, projectName):
         errors.append('Description must be between 20 and 500 characters long.')
 
     if projectName not in PROJECTS_NAMES:
-        errors.append('Not a valid choice')
+        errors.append('Project is not a valid choice')
 
     for name in teamMembers:
         if len(name) < 2 or len(name)>25:
@@ -76,7 +77,7 @@ def validation(teamMembers, description, projectName):
             break
     
     if len(errors) == 0:
-        return True,None
+        return True,[]
     else:
         return False, errors
 
@@ -102,25 +103,31 @@ def formSubmission():
 
     validate, errors = validation(teamMembers, description, projectName)
 
-    if request.method == 'POST' and form.validate() and validate:
-        github = form.githubLink.data
+    if request.method == 'POST':
+        if  form.validate() and validate:
+            github = form.githubLink.data
 
-        if not github:
-            github = ''
+            if not github:
+                github = ''
 
-        team = Team('21-22',form.teamName.data, projectName, teamMembers, github, form.videoLink.data, description)
+            team = Team('21-22',form.teamName.data, projectName, teamMembers, github, form.videoLink.data, description)
 
-        doc_ref = db.collection(team.year).document(team.teamName)
-        doc_ref.set({
-            u'project': team.project,
-            u'members': team.getJoinedMembers(),
-            u'githubLink': team.githubLink,
-            u'videoLink': team.videoLink,
-            u'description': team.description,
-        })
+            doc_ref = db.collection(team.year).document(team.teamName)
+            doc_ref.set({
+                u'project': team.project,
+                u'members': team.getJoinedMembers(),
+                u'githubLink': team.githubLink,
+                u'videoLink': team.videoLink,
+                u'description': team.description,
+            })
 
-        flash('You were successfully uploaded the form')
-        return redirect(url_for('index'))
+            flash('You were successfully uploaded the form')
+            return redirect(url_for('index'))
+        else:
+            errors = errors + [err_msg[0] for _, err_msg in form.errors.items()]
+            flash(errors)
+            return redirect(url_for('upload'))
+
     return render_template('upload.html', projects=projects, errors=errors)
 
 if __name__ == "__main__":

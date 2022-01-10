@@ -5,13 +5,16 @@
 {% endblock %}
 
 {% block body %}
+{% with errors = get_flashed_messages() %}
 {% if errors %}
 <!-- <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastPlacement"></div> -->
-{% for err in errors %}
-    <div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
+{% for error in errors %}
+{% for err in error %}    
+<div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
     <p class="m-0 container">{{ err }}</p>
     <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
-    </div>
+</div>
+{% endfor %}
 <!-- <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="true"></div>
     <div class="toast-header">
         <strong class="me-auto">Error</strong>
@@ -21,9 +24,10 @@
         {{err}}
     </div>
 </div> -->
-{% endfor %}
 <!-- </div> -->
+{% endfor %}
 {% endif %}
+{% endwith %}
 <section class="bg-light">
     <div class='text-dark container p-0 p-lg-5 my-5 rounded'>
         <h1 class="d-lg-none d-block text-center mb-5 display-3">Fill in Form</h1>
@@ -62,7 +66,7 @@
                     <label for="githubLink" class="form-label">GitHub Repo Link</label>
                     <div class="input-group">
                         <span class="input-group-text">https://github.com/</span>
-                        <input type="text" class="form-control" id="githubURL" name="githubURL"
+                        <input type="text" class="form-control" id="githubLink" name="githubLink"
                             placeholder="username/fopProject">
                     </div>
                     <div class="form-text">If you wish to share your source code</div>
@@ -125,7 +129,8 @@
         input.minLength = "2";
         input.maxLength = "25";
         input.name = `teamMembers[${memberDiv.childElementCount}]`
-
+        input.placeholder="2-25 characters"
+        
         let btn = document.createElement("button")
         btn.innerHTML = "Remove"
         btn.type = "button"
