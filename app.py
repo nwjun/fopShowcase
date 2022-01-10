@@ -1,15 +1,13 @@
 from flask import Flask,session, redirect, flash
 from flask.helpers import flash
-from jinja2 import Template
 from flask import render_template, url_for,request
-from wtforms import Form, StringField, validators,SelectField,TextAreaField
+from wtforms import Form, StringField, validators
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
 from Team import Team
-from OptionalValidation import OptionalButNotEmpty
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
