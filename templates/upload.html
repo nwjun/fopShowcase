@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% set active_page = "upload" %}
 {% block head %}
 <title>Upload Project</title>
 {% endblock %}
@@ -9,35 +9,25 @@
 {% if errors %}
 <!-- <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastPlacement"></div> -->
 {% for error in errors %}
-{% for err in error %}    
-<div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
-    <p class="m-0 container">{{ err }}</p>
-    <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
-</div>
-{% endfor %}
-<!-- <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="true"></div>
-    <div class="toast-header">
-        <strong class="me-auto">Error</strong>
-        <button type="button" class="btn-close" onclick=hideToast() data-bs-dismiss="toast" aria-label="Close"></button>
+    {% for err in error %}
+    <div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
+        <p class="container mb-0">{{ err }}</p>
+        <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
     </div>
-    <div class="toast-body">
-        {{err}}
-    </div>
-</div> -->
-<!-- </div> -->
+    {% endfor %}
 {% endfor %}
 {% endif %}
 {% endwith %}
 <section class="bg-light">
     <div class='text-dark container p-0 p-lg-5 my-5 rounded'>
-        <h1 class="d-lg-none d-block text-center mb-5 display-3">Fill in Form</h1>
+        <h1 class="d-lg-none d-block text-center mb-5 display-3">Project Details Form</h1>
         <div class="d-lg-flex align-items-center justify-content-center">
             <div class="d-none d-lg-block col-5">
                 <p class="h1 mb-2 display-3">Welcome!</p>
                 <p class="h3 mb-5">First, please fill in the form</p>
                 <img src="../static/images/form.svg" alt="filling form" class="img-fluid pe-5">
             </div>
-            <form action="/submitForm" class="bg-dark text-light p-5 rounded col-lg-7" method="POST">
+            <form action="/submitForm" class="p-5 rounded col-lg-7" method="POST">
                 <div class="mb-3">
                     <label for="teamName" class="form-label">Team Name</label>
                     <input type='text' class="form-control" name="teamName" id="teamName"
@@ -67,7 +57,7 @@
                     <div class="input-group">
                         <span class="input-group-text">https://github.com/</span>
                         <input type="text" class="form-control" id="githubLink" name="githubLink"
-                            placeholder="username/fopProject">
+                            placeholder="(optional) username/fopProject">
                     </div>
                     <div class="form-text">If you wish to share your source code</div>
                 </div>
@@ -80,14 +70,15 @@
                     </div>
                     <div class="form-text">Either unlisted or public link is accepted.</div>
                 </div>
-                <div class="mb-3  position-relative">
+                <div class="mb-5  position-relative">
                     <label for="projectDescription" class="form-label">Description</label>
                     <textarea id="projectDescription" style="resize:none" name="projectDescription" cols="30" rows="10"
                         class="form-control" maxlength="500" minlengh="20" required></textarea>
                     <div class="form-text position-absolute end-0" id="charCount">0</div>
                     <div class="form-text">Between 20-500 characters</div>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                {{ recaptcha }}
+                <button type="submit" class="btn btn-primary mt-3">Submit</button>
             </form>
         </div>
     </div>
@@ -96,9 +87,6 @@
 
 {% block script %}
 <script>
-    // set 'upload' in navbar as active
-    document.getElementById('home').classList.toggle("active");
-    document.getElementById('upload').classList.toggle("active");
     // document.getElementById("charCount").innerHTML = projectDescription.value.length
 
     let memberDiv = document.getElementById("teamMembers");
@@ -129,8 +117,8 @@
         input.minLength = "2";
         input.maxLength = "25";
         input.name = `teamMembers[${memberDiv.childElementCount}]`
-        input.placeholder="2-25 characters"
-        
+        input.placeholder = "2-25 characters"
+
         let btn = document.createElement("button")
         btn.innerHTML = "Remove"
         btn.type = "button"

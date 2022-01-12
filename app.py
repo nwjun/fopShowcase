@@ -1,16 +1,26 @@
+import threading
+from firebase_admin import firestore
 from flask import Flask,session, redirect, flash
 from flask.helpers import flash
 from flask import render_template, url_for,request
 from wtforms import Form, StringField, validators
 
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+
+from datetime import timedelta
+
+from flask_recaptcha import ReCaptcha # Import ReCaptcha object
 
 from Team import Team
+from db_utils import pushToDb, getCollectionByProject, getTeamDetails, getPaginationDetails
 
 app = Flask(__name__)
+# session
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+# recaptcha
+app.config['RECAPTCHA_SITE_KEY'] = '6Ld2IAMeAAAAAIgPizQgCFgYP0K3qJAzmwwJmb3k' # <-- Add your site key
+app.config['RECAPTCHA_SECRET_KEY'] = '6Ld2IAMeAAAAAFDwCH4t-MjL9XhImq4Q3ovWCKDl' # <-- Add your secret key
+recaptcha = ReCaptcha(app) # Create a ReCaptcha object by passing in 'app' as parameter
 
 projects = [
     {
@@ -43,16 +53,8 @@ PROJECTS_NAMES = [proj["project"] for proj in projects]
 
 # Use a service account
 firebase_admin.initialize_app()
-db = firestore.client()
-
-
-@app.route("/")
-def index():
-    return render_template('index.html', projects=projects)
-
-@app.route("/upload")
-def upload():
-    return render_template('upload.html',projects=projects)
+if 'db' not in session:
+    session['db'] = firestore.client()
 
 class RegistrationForm(Form):
     teamName = StringField('Team Name', [validators.Length(min=3, max=10)])
@@ -79,10 +81,23 @@ def validation(teamMembers, description, projectName):
     else:
         return False, errors
 
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(hours=1)
 
-@app.route('/projects/<project>')
-def projectPage(project):
-    return render_template('project.html')
+@app.route("/")
+def index():
+    return render_template('index.html', projects=projects)
+
+@app.route("/upload")
+def upload():
+    return render_template('upload.html',projects=projects)
+
+@app.route('/projects/<projectName>')
+def projectPage(projectName):
+    teams = getCollectionByProject(projectName)
+    return render_template('project.html', projectName=projectName,year="21-22",teams=teams)
 
 @app.route("/submitForm", methods=['POST'])
 def formSubmission():
@@ -102,31 +117,36 @@ def formSubmission():
     validate, errors = validation(teamMembers, description, projectName)
 
     if request.method == 'POST':
-        if  form.validate() and validate:
-            github = form.githubLink.data
+        if recaptcha.verify():
 
-            if not github:
-                github = ''
+            if  form.validate() and validate:
+                github = form.githubLink.data
 
-            team = Team('21-22',form.teamName.data, projectName, teamMembers, github, form.videoLink.data, description)
+                if not github:
+                    github = ''
 
-            doc_ref = db.collection(team.year).document(team.teamName)
-            doc_ref.set({
-                u'project': team.project,
-                u'members': team.getJoinedMembers(),
-                u'githubLink': team.githubLink,
-                u'videoLink': team.videoLink,
-                u'description': team.description,
-            })
-
-            flash('You were successfully uploaded the form')
-            return redirect(url_for('index'))
+                team = Team('21-22',form.teamName.data, projectName, teamMembers, github, form.videoLink.data, description)
+                succeed = pushToDb(team)
+                if succeed:
+                    flash('Successfully uploaded the form')
+                else:
+                    flash('Failed to upload the form to server!')
+                return redirect(url_for('index'))
+            else:
+                errors = errors + [err_msg[0] for _, err_msg in form.errors.items()]
         else:
-            errors = errors + [err_msg[0] for _, err_msg in form.errors.items()]
-            flash(errors)
-            return redirect(url_for('upload'))
+            errors = ['Please fill out the ReCaptcha!']
+        flash(errors)
+        return redirect(url_for('upload'))
 
-    return render_template('upload.html', projects=projects, errors=errors)
+    return render_template('upload.html', projects=projects)
+
+@app.route("/projects/<projectName>/<team>")
+def showProjectDetails(team,projectName):
+    showingTeam = getTeamDetails(projectName,team)
+    pagination = getPaginationDetails(projectName)
+    return render_template('projectDetails.html', team=showingTeam, pagination=pagination)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
