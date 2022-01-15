@@ -2,22 +2,25 @@
 {% set active_page = "upload" %}
 {% block head %}
 <title>Upload Project</title>
+<script src="{{url_for('static', filename='js/validators.js')}}"></script>
+
 {% endblock %}
 
 {% block body %}
+
 {% with errors = get_flashed_messages() %}
 {% if errors %}
-<!-- <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastPlacement"></div> -->
 {% for error in errors %}
-    {% for err in error %}
-    <div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
-        <p class="container mb-0">{{ err }}</p>
-        <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
-    </div>
-    {% endfor %}
+{% for err in error %}
+<div class="alert alert-danger alert-dismissible fade show mb-0 px-5" role='alert'>
+    <p class="container mb-0">{{ err }}</p>
+    <button class="btn-close me-5" type="button" data-bs-dismiss="alert" aria-label="close"></button>
+</div>
+{% endfor %}
 {% endfor %}
 {% endif %}
 {% endwith %}
+
 <section class="bg-light">
     <div class='text-dark container p-0 p-lg-5 my-5 rounded'>
         <h1 class="d-lg-none d-block text-center mb-5 display-3">Project Details Form</h1>
@@ -27,17 +30,28 @@
                 <p class="h3 mb-5">First, please fill in the form</p>
                 <img src="../static/images/form.svg" alt="filling form" class="img-fluid pe-5">
             </div>
-            <form action="/submitForm" class="p-5 rounded col-lg-7" method="POST">
-                <div class="mb-3">
+            <form action="/submitForm" class="p-5 rounded col-lg-7" onsubmit="event.preventDefault();submission();"
+                method="POST" novalidate>
+                <div class="mb-3 ">
+                    <div id="spinnerTeamName" class="spinner-border text-secondary position-absolute"
+                        style="width: 0.8rem; height: 0.8rem; margin-top: 0.25rem; margin-left: 6rem; display: none;"
+                        role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                     <label for="teamName" class="form-label">Team Name</label>
-                    <input type='text' class="form-control" name="teamName" id="teamName"
-                        aria-label="What's your team name?" placeholder="3-20 characters" maxlength="10" minlength="3"
-                        required>
+
+                    <input type='text' class="form-control input-needs-validation" name="teamName" id="teamName"
+                        aria-label="What's your team name?" placeholder="3-20 characters" maxlength="20" minlength="3"
+                        required value="{{team['teamName']}}" onblur="teamNameValidation(this)"
+                        onfocus="removeValidInvalidClass(this)">
+                    <div class="invalid-feedback">
+                        Team name must be 3-20 characters
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="selectProject" class="form-label">Project</label>
                     <select id="selectProject" class="form-select" name="selectProject"
-                        aria-label="What is your project?" required>
+                        aria-label="What is your project?" required value="{{team['projectName']}}">
                         {% for proj in projects %}
                         <option value='{{proj["project"]}}'>{{proj["project"]}}</option>
                         {% endfor %}
@@ -46,36 +60,87 @@
                 <div class="mb-3">
                     <label for="teamMembers" class="form-label">Team Members</label>
                     <div id="teamMembers">
-                        <input type="text" class='form-control mb-3' name="teamMembers[0]"
-                            aria-label="Who are your team members?" minlength="2" maxlength="25"
-                            placeholder="2-25 characters" required>
+                        <div class="mb-3">
+                            <input type="text" class='form-control input-needs-validation' name="teamMembers[0]"
+                                aria-label="Who are your team members?" minlength="2" maxlength="25"
+                                placeholder="2-25 characters" required value="{{team['teamMembers'][0]}}"
+                                id='teamMember0' onblur="memberNameValidation(this)"
+                                onfocus="removeValidInvalidClass(this)">
+                            <div class="invalid-feedback">
+                                Name must be 2-25 characters
+                            </div>
+                        </div>
+                        {% if team['teamMembers']|length > 1%}
+                        {% for i in range(1,teamMembers|length) %}
+                        <div>
+                            <div class="input-group mb-3">
+                                <input type="text" class='form-control input-needs-validation'
+                                    aria-label="Who are your team members?" required minlength="2" maxlength="25"
+                                    placeholder="2-25 characters" name='teamMembers[idx]'
+                                    value="{{team['teamMembers'][i]}}" id='teamMember{{i}}'
+                                    onblur="memberNameValidation(this)" onfocus="removeValidInvalidClass(this)">
+                                <button class="btn btn-danger">Remove</button>
+                                <div class="invalid-feedback">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
                     </div>
                     <button class="btn btn-primary mb-3" id="addMember" type="button">Add</button>
                 </div>
                 <div class="mb-3">
+                    <label for="email" class="form-label">Contact Email</label>
+                    <input type='email' class="form-control input-needs-validation" name="email" id="email"
+                        aria-label="What's your contact email?" placeholder="example@gmail.com" maxlength="254"
+                        minlength="6" required value="{{team['email']}}" onblur=emailValidation(this)
+                        onfocus="removeValidInvalidClass(this)">
+                    <div class="invalid-feedback">
+                        Please use correct email format.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div id="spinnerGithubLink" class="spinner-border text-secondary position-absolute"
+                        style="width: 0.8rem; height: 0.8rem; margin-top: 0.25rem; margin-left: 8.5rem; display: none;"
+                        role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                     <label for="githubLink" class="form-label">GitHub Repo Link</label>
                     <div class="input-group">
                         <span class="input-group-text">https://github.com/</span>
                         <input type="text" class="form-control" id="githubLink" name="githubLink"
-                            placeholder="(optional) username/fopProject">
+                            value="{{team['githubLink']}}" placeholder="(optional) username/fopProject"
+                            onblur="githubLinkValidation(this)" onfocus="removeValidInvalidClass(this)">
+                        <div class="invalid-feedback">Invalid github link</div>
                     </div>
                     <div class="form-text">If you wish to share your source code</div>
                 </div>
                 <div class="mb-3">
-                    <label for="videoLink" class="form-label">Demo Video link</label>
+                    <div id="spinnerVideoLink" class="spinner-border text-secondary position-absolute"
+                        style="width: 0.8rem; height: 0.8rem; margin-top: 0.25rem; margin-left: 11.5rem; display: none;"
+                        role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <label for="videoLink" class="form-label">Demo Youtube Video Id</label>
                     <div class="input-group">
                         <span class="input-group-text">https://youtu.be/</span>
-                        <input type="text" class="form-control" id="videoLink" name="videoLink" placeholder="example"
-                            required>
+                        <input type="text" class="form-control input-needs-validation" id="videoLink" name="videoLink"
+                            placeholder="example" required value="{{team['videoLink']}}" minlength="5" maxlength="20"
+                            onblur="videoLinkValidation(this)" onfocus="removeValidInvalidClass(this)">
+                        <div class="invalid-feedback">Invalid video id</div>
                     </div>
                     <div class="form-text">Either unlisted or public link is accepted.</div>
                 </div>
                 <div class="mb-5  position-relative">
                     <label for="projectDescription" class="form-label">Description</label>
                     <textarea id="projectDescription" style="resize:none" name="projectDescription" cols="30" rows="10"
-                        class="form-control" maxlength="500" minlengh="20" required></textarea>
+                        class="form-control input-needs-validation" maxlength="500" minlengh="20" required
+                        value="{{team['description']}}" onblur="descriptionValidation(this)"></textarea>
                     <div class="form-text position-absolute end-0" id="charCount">0</div>
                     <div class="form-text">Between 20-500 characters</div>
+                    <div class="invalid-feedback">
+                        Description must be 20-500 characters.
+                    </div>
                 </div>
                 {{ recaptcha }}
                 <button type="submit" class="btn btn-primary mt-3">Submit</button>
@@ -84,79 +149,42 @@
     </div>
 </section>
 {% endblock %}
+<section class="d-flex justify-content-center align-items-center mt-5">
+    <img src="{{ url_for('static', filename='images/spinner2.gif') }}" alt="">
+</section>
 
 {% block script %}
 <script>
-    // document.getElementById("charCount").innerHTML = projectDescription.value.length
-
-    let memberDiv = document.getElementById("teamMembers");
-    let addMember = document.getElementById("addMember");
-    let projectName = document.getElementById("selectProject");
-    let projectDescription = document.getElementById("projectDescription");
-
-    teamName.addEventListener("blur", function () {
-        let text = teamName.value
-        if (text.length < 3 || text.length > 10) {
-            this.classList.add("invalid")
+    function submission() {
+        'use strict';
+        let needValidEle = document.getElementsByClassName("input-needs-validation");
+        let allValidate = true
+        Array.prototype.slice.call(needValidEle)
+            .forEach(ele => {
+                if (!ele.classList.contains('is-valid')) {
+                    ele.classList.add('is-invalid')
+                    allValidate = false
+                }
+            });
+        if (allValidate) {
+            document.getElementById('content').style.display = "none";
+            document.getElementById('loading').style.display = "block";
+            document.querySelector('form').submit()
         }
-    })
-
-    addMember.addEventListener("click", function () {
-        // <div class="input-group mb-3">
-        //  <input type="text" class='form-control' aria-label="Who are your team members?">
-        //  <button class="btn btn-danger">Remove</button>
-        // </div>
-        let div = document.createElement("div")
-        div.classList.add("input-group", "mb-3")
-
-        let input = document.createElement("input")
-        input.classList.add("form-control")
-        input.type = "text"
-        input.ariaLabel = "Who are your team members?"
-        input.required = true;
-        input.minLength = "2";
-        input.maxLength = "25";
-        input.name = `teamMembers[${memberDiv.childElementCount}]`
-        input.placeholder = "2-25 characters"
-
-        let btn = document.createElement("button")
-        btn.innerHTML = "Remove"
-        btn.type = "button"
-        btn.classList.add("btn", "btn-danger")
-        btn.onclick = function () {
-            let div = this.parentElement;
-            memberDiv.removeChild(div)
-            addMember.disabled = false
-        };
-
-        div.appendChild(input)
-        div.appendChild(btn)
-        memberDiv.appendChild(div)
-
-        if (memberDiv.childElementCount == 6) {
-            addMember.disabled = true
+        else {
+            return false;
         }
-    })
+    }
 
+    let memberDiv = document.getElementById('teamMembers')
+    let addBtn = document.getElementById('addMember')
+    addBtn.addEventListener('click', f => addMember(addBtn, memberDiv))
+    projectDescription.addEventListener("keydown", function () {
+        document.getElementById("charCount").innerHTML = this.value.length
+    })
     projectDescription.addEventListener("keyup", function () {
-        console.log(document.getElementById("selectProject").value)
         document.getElementById("charCount").innerHTML = this.value.length
     })
 
-    // function hideToast() {
-    //     document.querySelectorAll(".toast")
-    //     toast = document.getElementById("toastPlacement")
-    //     toast.classList.add("hide")
-    //     // toasts[i].classList.remove("show")
-    // }
-    // let toasts = document.getElementsByClassName("toast")
-    // // let toasteds=[]
-    // if(toasts){
-    //     for(var i=0; i<toasts.length; i++){} {
-    //         toast = toasts[i]
-    //         toast=new bootstrap.Toast(toast)
-    //         toast.show()
-    //     }
-    // }
 </script>
 {% endblock %}
