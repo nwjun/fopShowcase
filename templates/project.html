@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% set active_page = "projects" %}
+{% block head %}
+<title>Projects Showcase</title>
+{% endblock %}
+
+{% block body %}
+<section class="pt-2" id="content">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mt-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item">{{year}}</li>
+                <li class="breadcrumb-item active" aria-current="page">{{projectName}}</li>
+            </ol>
+        </nav>
+
+        {% if teams is none %}
+        <div class="text-center mt-5 d-md-flex justify-content-center align-items-center">
+            <h1 class="display-4 mb-5 me-md-5">It is empty here...</h1>
+            <img src="{{ url_for('static', filename='images/void.svg') }}" class="img-fluid w-50"
+                style="max-width: 400px;" alt="No project found">
+        </div>
+        {% else %}
+        <div class="row justify-content-lg-start justify-content-center mb-5">
+
+            {% for team in teams %}
+            <div class="card mx-5 my-4 col-10 col-md-6 col-lg-3 p-0">
+                <img src="https://img.youtube.com/vi/{{team.videoLink}}/0.jpg" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{team.teamName}}</h5>
+                    <!-- {% for name in team.teamMembers %} -->
+                    <!-- <p class="card-text mb-1">{{name}}</p> -->
+                    <!-- {% endfor %} -->
+                    <p class="card-text mb-1">{{', '.join(team.teamMembers)}}</p>
+                    <a href="{{ url_for('showProjectDetails',projectName=projectName, teamName=team.teamName) }}"
+                        class="btn btn-primary mt-2">View</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

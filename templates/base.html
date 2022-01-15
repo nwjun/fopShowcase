@@ -50,11 +50,10 @@
                             Projects
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('projectPage', projectName='Cinema Ticketing System') }}">Cinema Ticketing System</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('projectPage', projectName='Tower Defense') }}">Tower Defense</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('projectPage', projectName='Module Registration System') }}">Module Registration System</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('projectPage', projectName='Online Shopping Platform') }}">Online Shopping System</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('projectPage', projectName='Hotel Management System') }}">Hotel Management System</a></li>
+                            {% set projects2122 = allYearsProjectsNames[0][1] %}
+                            {% for name in projects2122 %}
+                            <li><a class="dropdown-item" href="{{ url_for('projectPage', projectName=name) }}">{{name}}</a></li>
+                            {% endfor %}
                         </ul>
                     </li>
                 </ul> 

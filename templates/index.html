@@ -37,16 +37,16 @@
         </div>
     </div>
 </section>
-
+{% for yearProj in allYearsProjectsDetails %}
 <section class="container">
-    <h1 class="text-center m-5 text-dark display-3">Year 21/22</h1>
+    <h1 class="text-center m-5 text-dark display-3">Year {{yearProj[0].replace('-',' / ')}}</h1>
     <div class="row mb-5 text-center">
-        {% for prj in projects %}
+        {% for prj in yearProj[1] %}
         <div class="col-lg mb-5">
             <div class="card text-center min-vw-80">
                 <div class="card-body text-center">
-                    <h3 class="card-title p-3">{{prj["project"]}}</h3>
-                    <p class="card-text">{{prj["desc"]}}</p>
+                    <h3 class="card-title p-3">{{prj["projectName"]}}</h3>
+                    <p class="card-text">{{prj["description"]}}</p>
                     <a href="#" class="btn btn-primary">
                         See projects
                     </a>
@@ -56,4 +56,5 @@
         {% endfor %}
     </div>
 </section>
+{% endfor %}
 {% endblock %}

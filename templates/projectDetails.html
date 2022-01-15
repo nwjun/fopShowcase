@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% set active_page = "projects" %}
+{% block head %}
+<title>FOP | {{team.teamName}}</title>
+{% endblock %}
+
+{% block body %}
+<section class="pt-2">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mt-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item">{{team.year}}</li>
+                <li class="breadcrumb-item" aria-current="page"><a
+                        href="{{ url_for('projectPage', projectName=team.projectName) }}">{{team.projectName}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{team.teamName}}</li>
+
+            </ol>
+        </nav>
+
+        <div class="my-5">
+            <div class="ratio ratio-16x9 w-75 mx-auto">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/{{team.videoLink}}"
+                    title="YouTube video player" frameborder="0"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="d-lg-flex justify-content-center">
+                <img src="{{ url_for('static', filename='images/meeting.svg') }}" alt=""
+                    class="w-50 img-fluid px-3 d-none d-lg-block me-3" style="max-width: 30rem;">
+                <div class="card my-5" style="min-width: 20rem;">
+                    <div class="card-header">
+                        {{team.teamName}}
+                    </div>
+                    <div class="card-body">
+                        <div class="mt-2">
+                            <h5 class="card-title">Description</h5>
+                            <p class="card-text">{{team.description}}</p>
+                        </div>
+                        <div class="my-3">
+                            <h5 class="card-title">Team Members</h5>
+                            <p class="card-text">{{', '.join(team.teamMembers)}}</p>
+                        </div>
+                        <div class="d-md-flex mt-5 mb-3">
+                            <a href="{{team.githubLink}}"
+                                class="btn btn-primary me-3 {{'disabled' if team.githubLink == '' else ''}}">Source
+                                Code</a>
+                            <a href="mailto:nicolenahwj@gmail.com" class="btn btn-outline-primary">Contact Us</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% set currentIdx, maxIdx, teams = pagination['currentIdx'], pagination['maxIdx'],pagination['teams'] %}
+<nav aria-label="Page navigation" class="container">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {{ 'disabled' if currentIdx == 0 }}">
+            <a class="page-link"
+                href="{{ '' if currentIdx == 0 else url_for('showProjectDetails',projectName=team.projectName, teamName=teams[currentIdx-1]['teamName']) }}"
+                aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% if currentIdx != 0 and maxIdx == currentIdx%}
+        <li class="page-item"><a class="page-link"
+                href="{{ url_for('showProjectDetails',projectName=team.projectName, teamName=teams[currentIdx-2]['teamName']) }}">{{currentIdx-1}}</a>
+        </li>
+        {% endif %}
+
+        {% if currentIdx != 0 %}
+        <li class="page-item"><a class="page-link"
+                href="{{ url_for('showProjectDetails',projectName=team.projectName, teamName=teams[currentIdx-1]['teamName']) }}">{{currentIdx}}</a>
+        </li>
+        {% endif %}
+
+        <li class="page-item active"><a class="page-link" href="#">{{currentIdx+1}}</a></li>
+
+        {% if maxIdx > currentIdx %}
+        <li class="page-item"><a class="page-link"
+                href="{{ url_for('showProjectDetails',projectName=team.projectName, teamName=teams[currentIdx+1]['teamName']) }}">{{currentIdx+2}}</a>
+        </li>
+        {% endif %}
+
+        {% if currentIdx == 0 and maxIdx > currentIdx%}
+        <li class="page-item"><a class="page-link"
+                href="{{ url_for('showProjectDetails',projectName=team.projectName, teamName=teams[currentIdx+2]['teamName']) }}">{{currentIdx+3}}</a>
+        </li>
+        {% endif %}
+
+        <li class="page-item {{ 'disabled' if currentIdx == maxIdx }}">
+            <a class="page-link"
+                href="{{'' if currentIdx == maxIdx else url_for('showProjectDetails',projectName=team.projectName, teamName=teams[currentIdx+1]['teamName']) }}"
+                aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+{% block script%}
+
+{% endblock %}

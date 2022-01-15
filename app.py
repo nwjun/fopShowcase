@@ -8,7 +8,7 @@ import firebase_admin
 from flask_recaptcha import ReCaptcha  # Import ReCaptcha object
 
 from Team import Team
-from db_utils import pushToDb, getCollectionByProject, getTeamDetails, createData, isTeamNameAvailable
+from db_utils import pushToDb, getCollectionByProject, getTeamDetails, isTeamNameAvailable, getYearProjects
 
 app = Flask(__name__)
 # session
@@ -21,42 +21,40 @@ app.config['RECAPTCHA_SECRET_KEY'] = '6Ld2IAMeAAAAAFDwCH4t-MjL9XhImq4Q3ovWCKDl'
 # Create a ReCaptcha object by passing in 'app' as parameter
 recaptcha = ReCaptcha(app)
 
-projects = [
-    {
-        "icon": "bi bi-film",
-        "project": "Cinema Ticketing System",
-        "desc": "You are required to implement the current SOP into the cinema’s online ticket booking system which allow customers to purchase tickets and place food orders.",
-    },
-    {
-        "icon": "bi bi-controller",
-        "project": "Tower Defense",
-        "desc": "You are required to build a brand new Tower of Defence game that allows you - the mayor of the city – to keep your city safe and defeat the dragon.",
-    },
-    {
-        "icon": "bi bi-book",
-        "project": "Module Registration Platform",
-        "desc": "You are required to build a module registration platform. The end-users consists of students and stuff where both of them have different requirements & usages",
-    },
-    {
-        "icon": "bi bi-bag",
-        "project": "Online Shopping Platform",
-        "desc": "You are required to build an online shopping app that provides a platform for customers and sellers to trade",
-    },
-    {
-        "icon": "bi bi-shop",
-        "project": "Hotel Management System",
-        "desc": "You are required to build a system where customers can direct booking through the system and pay before booking to avoid over booking not check-in problems.",
-    },
-]
-PROJECTS_NAMES = [proj["project"] for proj in projects]
+years=['21-22']
 
 # Use a service account
 firebase_admin.initialize_app()
 
+
+
+@app.context_processor
+def injectYearsProjects():
+    if 'allYearsProjectsNames' not in session or 'allYearsProjectsDetails' not in session:
+        allYearsProjectsNames = []
+        allYearsProjectsDetails = []
+        for year in years:
+            oneYearProject = getYearProjects(year)
+            projectsNames = [proj["projectName"] for proj in oneYearProject]
+            allYearsProjectsNames.append([year,projectsNames])
+            allYearsProjectsDetails.append([year, oneYearProject])
+        session['allYearsProjectsNames'] = allYearsProjectsNames
+        session['allYearsProjectsDetails'] = allYearsProjectsDetails
+    return dict(allYearsProjectsNames=session['allYearsProjectsNames'])
+
+def getAllYearsProjectsDetails():
+    if "allYearsProjectsDetails" not in session:
+        allYearsProjectsDetails = []
+        for year in years:
+            oneYearProject = getYearProjects(year)
+            allYearsProjectsDetails.append([year, oneYearProject])
+        session['allYearsProjectsDetails'] = allYearsProjectsDetails
+    return session['allYearsProjectsDetails']
+
 @app.route("/")
 def index():
-    # createData()
-    return render_template('index.html', projects=projects)
+    allYearsProjectsDetails = getAllYearsProjectsDetails()
+    return render_template('index.html', allYearsProjectsDetails = allYearsProjectsDetails)
 
 
 @app.route("/upload")
@@ -73,14 +71,12 @@ def upload():
             'description': "",
             'email': "",
         }
-    return render_template('upload.html', projects=projects, team=team)
+    return render_template('upload.html',team=team)
 
 
 @app.route('/projects/<projectName>')
 def projectPage(projectName):
     teams = getCollectionByProject(projectName)
-    print(projectName)
-    print(teams)
     return render_template('project.html', projectName=projectName, year="21-22", teams=teams)
 
 
@@ -102,13 +98,8 @@ def formSubmission():
     validate, errors = validation(teamMembers, description, projectName, PROJECTS_NAMES)
 
     if request.method == 'POST':
-        github = form.githubLink.data
-
-        if not github:
-            github = ''
-
         team = Team('21-22', form.teamName.data, projectName, teamMembers,
-                    github, form.videoLink.data, description, form.email.data)
+                    form.githubLink.data, form.videoLink.data, description, form.email.data)
 
         session['formDetails'] = team.to_dict()
 
@@ -136,7 +127,7 @@ def formSubmission():
 def showProjectDetails(projectName, teamName):
     details, currentIdx = getTeamDetails(projectName, teamName)
     if not details:
-        print("Team is not is database!")
+        raise Exception("Team is not is database!")
 
     return render_template('projectDetails.html', team=details['teams'][currentIdx], pagination=details)
 

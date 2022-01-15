@@ -2,15 +2,9 @@ body, html{
     height: 80%;
 }
 #content{
-    /* display: none; */
     display: block;
 }
 
 #loading{
-    /* display: block; */
     display: none;
 }
-/* 
-@media only screen and (min-width:{
-    
-} */
