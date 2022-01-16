@@ -3,6 +3,7 @@ from flask import Flask, session, redirect, flash
 from flask.helpers import flash
 from flask import render_template, url_for, request
 from validators import validation, RegistrationForm
+import json
 
 import firebase_admin
 from flask_recaptcha import ReCaptcha  # Import ReCaptcha object
@@ -11,13 +12,8 @@ from Team import Team
 from db_utils import pushToDb, getCollectionByProject, getTeamDetails, isTeamNameAvailable, getYearProjects
 
 app = Flask(__name__)
-# session
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-# recaptcha
-# <-- Add your site key
-app.config['RECAPTCHA_SITE_KEY'] = '6Ld2IAMeAAAAAIgPizQgCFgYP0K3qJAzmwwJmb3k'
-# <-- Add your secret key
-app.config['RECAPTCHA_SECRET_KEY'] = '6Ld2IAMeAAAAAFDwCH4t-MjL9XhImq4Q3ovWCKDl'
+app.config.from_file("config.json", load=json.load)
+
 # Create a ReCaptcha object by passing in 'app' as parameter
 recaptcha = ReCaptcha(app)
 
@@ -97,7 +93,7 @@ def formSubmission():
     projectName = request.form['selectProject']
 
     validate, errors = validation(
-        teamMembers, description, projectName, PROJECTS_NAMES)
+        teamMembers, description, projectName, session['allYearsProjectsNames'][0][1])
 
     if request.method == 'POST':
         team = Team('21-22', form.teamName.data, projectName, teamMembers,
@@ -122,8 +118,7 @@ def formSubmission():
         flash(errors)
         return redirect(url_for('upload'))
 
-    return render_template('upload.html', projects=projects)
-
+    return redirect(url_for('upload'))
 
 @app.route("/projects/<projectName>/<teamName>")
 def showProjectDetails(projectName, teamName):
