@@ -1,4 +1,5 @@
 from flask import Flask, session, redirect, flash
+from flask_cors import CORS
 from flask.helpers import flash
 from flask import render_template, url_for, request
 from validators import validation, RegistrationForm
@@ -13,6 +14,8 @@ from Team import Team
 from db_utils import pushToDb, getCollectionByProject, getTeamDetails, isTeamNameAvailable, getYearProjects
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 load_dotenv()
 
