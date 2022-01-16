@@ -40,21 +40,18 @@ def getCollectionByProject(projectName):
         queryTeams = [doc.to_dict() for doc in docs]
 
         if len(queryTeams) != 0:
-            session[projectName] = {
+            teams = {
                 "teams": queryTeams,
                 "maxIdx": len(queryTeams)-1,
             }
+            return teams
         else:
             return None
 
-    return session[projectName]['teams']
-
 
 def getTeamDetails(projectName, teamName):
-    if projectName not in session:
-        getCollectionByProject(projectName)
+    db = getCollectionByProject(projectName)
 
-    db = session.pop(projectName)
     teams = db['teams']
 
     details = {
