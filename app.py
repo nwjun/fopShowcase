@@ -100,7 +100,11 @@ def upload():
 
 @app.route('/projects/<projectName>')
 def projectPage(projectName):
-    teams = getCollectionByProject(projectName)
+    db = getCollectionByProject(projectName)
+    teams = None
+    if db:
+        teams = db["teams"]
+
     return render_template('project.html', projectName=projectName, year="21-22", teams=teams)
 
 
