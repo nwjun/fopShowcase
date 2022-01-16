@@ -47,7 +47,7 @@
                 <div class="card-body text-center">
                     <h3 class="card-title p-3">{{prj["projectName"]}}</h3>
                     <p class="card-text">{{prj["description"]}}</p>
-                    <a href="#" class="btn btn-primary">
+                    <a href="{{ url_for('projectPage', projectName=prj['projectName']) }}" class="btn btn-primary">
                         See projects
                     </a>
                 </div>
