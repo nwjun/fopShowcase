@@ -5,6 +5,7 @@ from flask import render_template, url_for, request
 from validators import validation, RegistrationForm
 from dotenv import load_dotenv
 from os import environ
+from validators import validateLink
 import json
 
 import firebase_admin
@@ -165,6 +166,17 @@ def checkTeamName():
     else:
         return {"result": False}
 
+@app.route("/checkLink")
+def checkLink():
+    url = request.args.get('u')
+    print(url)
+    try:
+        validateLink(url, "Error validating link")
+        print("hoho")
+        return {"result": True}
+    except Exception as err:
+        return {"result": err}
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -2,6 +2,7 @@
 {% set active_page = "upload" %}
 {% block head %}
 <title>FOP | Upload Project</title>
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> 
 <script src="{{url_for('static', filename='js/validators.js')}}"></script>
 
 {% endblock %}
