@@ -15,7 +15,6 @@ async function teamNameValidation(teamNameEle) {
     const URL = globalThis.SCRIPT_ROOT + '/checkTeamName';
     let text = teamNameEle.value
     let invalid = document.getElementsByClassName('invalid-feedback')[0]
-    console.log(teamNameEle)
     if (text.length != 0) {
         if (text.length < 3 || text.length > 20) {
             turnValidShowErrMsgIfNotValid(teamNameEle, false, 'Name must be 3-20 characters', invalid)
@@ -204,7 +203,6 @@ async function githubLinkValidation(element) {
 
 function descriptionValidation(element) {
     count = element.value.length
-    console.log(count)
     if (count != 0) {
         if (count < 20 || count > 500) {
             turnValidShowErrMsgIfNotValid(element, false)
