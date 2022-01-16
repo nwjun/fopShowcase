@@ -1,8 +1,9 @@
-from firebase_admin import firestore
 from flask import Flask, session, redirect, flash
 from flask.helpers import flash
 from flask import render_template, url_for, request
 from validators import validation, RegistrationForm
+from dotenv import load_dotenv
+from os import environ
 import json
 
 import firebase_admin
@@ -12,7 +13,29 @@ from Team import Team
 from db_utils import pushToDb, getCollectionByProject, getTeamDetails, isTeamNameAvailable, getYearProjects
 
 app = Flask(__name__)
-app.config.from_file("config.json", load=json.load)
+
+load_dotenv()
+
+app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
+app.config['RECAPTCHA_SITE_KEY'] = environ.get('RECAPTCHA_SITE_KEY')
+app.config['RECAPTCHA_SECRET_KEY'] = environ.get('RECAPTCHA_SECRET_KEY')
+# app.config.from_file("config.json", load=json.load)
+
+ggl_data = {
+    "type": environ.get('FIREBASE_SERVICE_TYPE'),
+    "project_id": environ.get('FIREBASE_PROJECT_ID'),
+    "private_key_id": environ.get('FIREBASE_PRIVATE_KEY_ID'),
+    "private_key": environ.get('FIREBASE_PRIVATE_KEY').replace('\\n', '\n'),
+    "client_email": environ.get('FIREBASE_CLIENT_EMAIL'),
+    "client_id": environ.get('FIREBASE_CLIENT_ID'),
+    "auth_uri": environ.get('FIREBASE_AUTH_URI'),
+    "token_uri": environ.get('FIREBASE_TOKEN_URI'),
+    "auth_provider_x509_cert_url": environ.get('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
+    "client_x509_cert_url": environ.get('FIREBASE_CLIENT_X509_CER_URL')
+}
+
+credentials = firebase_admin.credentials.Certificate(ggl_data)
+
 
 # Create a ReCaptcha object by passing in 'app' as parameter
 recaptcha = ReCaptcha(app)
@@ -20,7 +43,7 @@ recaptcha = ReCaptcha(app)
 years = ['21-22']
 
 # Use a service account
-firebase_admin.initialize_app()
+firebase_admin.initialize_app(credential=credentials)
 
 
 @app.context_processor
@@ -119,6 +142,7 @@ def formSubmission():
         return redirect(url_for('upload'))
 
     return redirect(url_for('upload'))
+
 
 @app.route("/projects/<projectName>/<teamName>")
 def showProjectDetails(projectName, teamName):
