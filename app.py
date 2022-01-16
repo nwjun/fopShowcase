@@ -143,8 +143,6 @@ def formSubmission():
         else:
             errors = ['Please fill out the ReCaptcha!']
         flash(errors)
-        return redirect(url_for('upload'))
-
     return redirect(url_for('upload'))
 
 
@@ -166,16 +164,15 @@ def checkTeamName():
     else:
         return {"result": False}
 
+
 @app.route("/checkLink")
 def checkLink():
     url = request.args.get('u')
-    print(url)
     try:
         validateLink(url, "Error validating link")
-        print("hoho")
         return {"result": True}
     except Exception as err:
-        return {"result": err}
+        return err
 
 
 if __name__ == "__main__":
