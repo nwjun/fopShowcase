@@ -1,22 +1,26 @@
 from wtforms import ValidationError, Form, StringField, validators, EmailField
 import requests
 
+
 def validateLink(url, errMsg):
     try:
-        r= requests.get(url)
+        r = requests.get(url)
         if r.status_code == 404:
             raise ValidationError(errMsg)
 
     except Exception as err:
         raise ValidationError(err)
 
-def videoLinkValidation(form,field):
+
+def videoLinkValidation(form, field):
     url = "http://img.youtube.com/vi/" + field.data + "/mqdefault.jpg"
-    validateLink(url,"Invalid video id")
+    validateLink(url, "Invalid video id")
+
 
 def githubLinkValidation(form, field):
     url = "https://github.com/" + field.data
-    validateLink(url,"Invalid github link")
+    validateLink(url, "Invalid github link")
+
 
 def validation(teamMembers, description, projectName, PROJECTS_NAMES):
     errors = []
@@ -40,10 +44,13 @@ def validation(teamMembers, description, projectName, PROJECTS_NAMES):
     else:
         return False, errors
 
+
 class RegistrationForm(Form):
     teamName = StringField('Team Name', [validators.DataRequired(
         "Team name is required"), validators.Length(min=3, max=20, message="Team name must be 3-20 characters")])
-    githubLink = StringField('GitHub Repo Link', [validators.Optional(), githubLinkValidation])
-    videoLink = StringField('Demo Video link', [validators.DataRequired('Video link is required'),videoLinkValidation])
+    githubLink = StringField('GitHub Repo Link', [
+                             validators.Optional(), githubLinkValidation])
+    videoLink = StringField('Demo Video link', [validators.DataRequired(
+        'Video link is required'), videoLinkValidation])
     email = EmailField('Contact Email', [validators.DataRequired(
         "Email is required"), validators.Email('Invalid email address.')])

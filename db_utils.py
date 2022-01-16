@@ -4,17 +4,20 @@ from Team import Team
 from firebase_admin import firestore
 from yearProject import YearProject
 
+
 def createData():
-    teamsName = ['test1', 'test2','test3','test4','test5']
+    teamsName = ['test1', 'test2', 'test3', 'test4', 'test5']
     projectName = 'Cinema Ticketing System'
-    teamMembers = ["abcd","efgh"]
-    github=""
-    videoLink ="SBsDkwbL-G4"
-    description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vitae purus maximus, egestas lorem in, ultrices nibh. Sed nec leo luctus, rutrum nulla et, pellentesque augue. Morbi convallis massa eget nisi commodo porta nec id felis. Proin posuere vel risus nec sollicitudin. Vestibulum elementum lacinia purus. Mauris accumsan molestie fringilla. Aenean pellentesque luctus porttitor. Donec varius leo sit amet ipsum c"
-    
+    teamMembers = ["abcd", "efgh"]
+    github = ""
+    videoLink = "SBsDkwbL-G4"
+    description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vitae purus maximus, egestas lorem in, ultrices nibh. Sed nec leo luctus, rutrum nulla et, pellentesque augue. Morbi convallis massa eget nisi commodo porta nec id felis. Proin posuere vel risus nec sollicitudin. Vestibulum elementum lacinia purus. Mauris accumsan molestie fringilla. Aenean pellentesque luctus porttitor. Donec varius leo sit amet ipsum c"
+
     for i in range(5):
-        team = Team('21-22',teamsName[i], projectName, teamMembers, github, videoLink, description)
+        team = Team('21-22', teamsName[i], projectName,
+                    teamMembers, github, videoLink, description)
         pushToDb(team)
+
 
 def pushToDb(team):
     assert isinstance(
@@ -27,6 +30,7 @@ def pushToDb(team):
     else:
         return False
 
+
 def getCollectionByProject(projectName):
     if projectName not in session:
         db = firestore.client()
@@ -34,7 +38,7 @@ def getCollectionByProject(projectName):
             u'21-22').where(u'projectName', u'==', projectName).stream()
 
         queryTeams = [doc.to_dict() for doc in docs]
-        
+
         if len(queryTeams) != 0:
             session[projectName] = {
                 "teams": queryTeams,
@@ -44,6 +48,7 @@ def getCollectionByProject(projectName):
             return None
 
     return session[projectName]['teams']
+
 
 def getTeamDetails(projectName, teamName):
     if projectName not in session:
@@ -61,16 +66,17 @@ def getTeamDetails(projectName, teamName):
     for idx, team in enumerate(teams):
         if team['teamName'] == teamName:
             details['currentIdx'] = idx
-    
+
     if details['currentIdx'] != -1:
         return details, details['currentIdx']
 
     return None, None
 
+
 def isTeamNameAvailable(teamName):
     db = firestore.client()
 
-    docs = db.collection(u'21-22').where(u'teamName',u'==', teamName).stream()
+    docs = db.collection(u'21-22').where(u'teamName', u'==', teamName).stream()
     # cant use len(docs) to determine whether has record as generator has no len()
     query = [doc.to_dict() for doc in docs]
 
@@ -79,8 +85,10 @@ def isTeamNameAvailable(teamName):
     else:
         return False
 
+
 def addYearProjects(yearProject):
-    assert isinstance(yearProject, YearProject), "object should be instance of YearProject"
+    assert isinstance(
+        yearProject, YearProject), "object should be instance of YearProject"
     db = firestore.client()
     doc_ref = db.collection('yearProject').document()
     res = doc_ref.set(yearProject.to_dict())
@@ -89,14 +97,15 @@ def addYearProjects(yearProject):
     else:
         return False
 
+
 def getYearProjects(year):
     db = firestore.client()
     docs = db.collection(
-            u'yearProject').where(u'year', u'==', year).stream()
+        u'yearProject').where(u'year', u'==', year).stream()
 
     queryTeams = [doc.to_dict() for doc in docs]
-        
+
     if len(queryTeams) != 0:
-        return queryTeams     
+        return queryTeams
     else:
         return None

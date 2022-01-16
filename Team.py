@@ -1,9 +1,10 @@
 from firebase_admin import firestore
 from flask import session
 
+
 class Team(object):
     def __init__(self, year, teamName, projectName, teamMembers, githubLink, videoLink, description, email):
-        self.year=year
+        self.year = year
         self.teamName = teamName
         self.projectName = projectName
         self.teamMembers = teamMembers
@@ -15,15 +16,15 @@ class Team(object):
             self.githubLink = ""
         else:
             self.githubLink = "https://github.com/"+githubLink
-    
+
     def getJoinedMembers(self):
         return '$$'.join(self.teamMembers)
-    
+
     @staticmethod
     def from_dict(source):
         # [START_EXCLUDE]
         team = Team("21-22", source[u'teamName'], source[u'projectName'], source[u'teamMembers'],
-        source[u'githubLink'], source[u'videoLink'],source[u'description'], source[u'email'])
+                    source[u'githubLink'], source[u'videoLink'], source[u'description'], source[u'email'])
         return team
         # [END_EXCLUDE]
 

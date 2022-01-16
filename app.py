@@ -21,11 +21,10 @@ app.config['RECAPTCHA_SECRET_KEY'] = '6Ld2IAMeAAAAAFDwCH4t-MjL9XhImq4Q3ovWCKDl'
 # Create a ReCaptcha object by passing in 'app' as parameter
 recaptcha = ReCaptcha(app)
 
-years=['21-22']
+years = ['21-22']
 
 # Use a service account
 firebase_admin.initialize_app()
-
 
 
 @app.context_processor
@@ -36,11 +35,12 @@ def injectYearsProjects():
         for year in years:
             oneYearProject = getYearProjects(year)
             projectsNames = [proj["projectName"] for proj in oneYearProject]
-            allYearsProjectsNames.append([year,projectsNames])
+            allYearsProjectsNames.append([year, projectsNames])
             allYearsProjectsDetails.append([year, oneYearProject])
         session['allYearsProjectsNames'] = allYearsProjectsNames
         session['allYearsProjectsDetails'] = allYearsProjectsDetails
     return dict(allYearsProjectsNames=session['allYearsProjectsNames'])
+
 
 def getAllYearsProjectsDetails():
     if "allYearsProjectsDetails" not in session:
@@ -51,10 +51,11 @@ def getAllYearsProjectsDetails():
         session['allYearsProjectsDetails'] = allYearsProjectsDetails
     return session['allYearsProjectsDetails']
 
+
 @app.route("/")
 def index():
     allYearsProjectsDetails = getAllYearsProjectsDetails()
-    return render_template('index.html', allYearsProjectsDetails = allYearsProjectsDetails)
+    return render_template('index.html', allYearsProjectsDetails=allYearsProjectsDetails)
 
 
 @app.route("/upload")
@@ -64,14 +65,14 @@ def upload():
     else:
         team = {
             'teamName': "",
-            'projectName': ["",],
-            'teamMembers' : "",
+            'projectName': ["", ],
+            'teamMembers': "",
             'githubLink': "",
             'videoLink': "",
             'description': "",
             'email': "",
         }
-    return render_template('upload.html',team=team)
+    return render_template('upload.html', team=team)
 
 
 @app.route('/projects/<projectName>')
@@ -95,7 +96,8 @@ def formSubmission():
     description = request.form['projectDescription']
     projectName = request.form['selectProject']
 
-    validate, errors = validation(teamMembers, description, projectName, PROJECTS_NAMES)
+    validate, errors = validation(
+        teamMembers, description, projectName, PROJECTS_NAMES)
 
     if request.method == 'POST':
         team = Team('21-22', form.teamName.data, projectName, teamMembers,
@@ -131,14 +133,16 @@ def showProjectDetails(projectName, teamName):
 
     return render_template('projectDetails.html', team=details['teams'][currentIdx], pagination=details)
 
+
 @app.route("/checkTeamName")
 def checkTeamName():
-    teamName =request.args.get('teamName')
+    teamName = request.args.get('teamName')
     availability = isTeamNameAvailable(teamName)
     if availability:
         return {"result": True}
     else:
         return {"result": False}
+
 
 if __name__ == "__main__":
     app.run(debug=True)
