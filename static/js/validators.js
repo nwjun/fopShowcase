@@ -135,12 +135,17 @@ function emailValidation(email) {
 }
 
 async function validateUrl(url) {
-    result = await fetch(url)
+    result = await fetch(globalThis.SCRIPT_ROOT + '/checkLink' + '?u=' + url)
+        .then(data => { return data.json() })
         .catch(err => {
-            throw Error(err)
+            console.log("Error when validating url:" + err)
+            return false
         })
-    if (result.status == 404) return false
-    return true
+    if (result['result']) {
+        return true
+    } else {
+        return false
+    }
 }
 
 async function isYoutubeVideoId(id) {
