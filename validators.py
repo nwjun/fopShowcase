@@ -1,5 +1,5 @@
 from wtforms import ValidationError, Form, StringField, validators, EmailField
-import requests
+import requests, re
 from db_utils import isTeamNameAvailable
 
 def validateLink(url, errMsg):
@@ -36,7 +36,13 @@ def teamNameValidation(form, field):
     """
     Check whether team name exists in database
     """
-    teamName = field.data
+    
+    teamName = field.data.trim()
+    if len(teamName) == 0:
+        raise ValidationError("Team name cannot be blank!")
+    havSpecialChar = re.search("[^a-zA-Z0-9_-]",teamName)
+    if havSpecialChar:
+        raise ValidationError("Team name can only consists of  A-Z, a-z, 0-9,_ and -!")
     availability = isTeamNameAvailable(teamName)
     if not availability:
         raise ValidationError("Team name is already taken!")
@@ -50,6 +56,7 @@ def validation(teamMembers, description, projectName, PROJECTS_NAMES):
     """
     # to store all the errors
     errors = []
+    description = description.strip()
     desLength = len(description)
 
     # validate description length (20-500 characters)

@@ -183,10 +183,10 @@
     let addBtn = document.getElementById('addMember')
     addBtn.addEventListener('click', f => addMember(addBtn, memberDiv))
     projectDescription.addEventListener("keydown", function () {
-        document.getElementById("charCount").innerHTML = this.value.length
+        document.getElementById("charCount").innerHTML = this.value.trim().length
     })
     projectDescription.addEventListener("keyup", function () {
-        document.getElementById("charCount").innerHTML = this.value.length
+        document.getElementById("charCount").innerHTML = this.value.trim().length
     })
 
 </script>
