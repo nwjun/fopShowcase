@@ -1,7 +1,6 @@
 [![GitHub stars](https://img.shields.io/github/stars/nwjun/fopShowcase.svg?style=social&label=Stars&style=plastic)]() [![GitHub watchers](https://img.shields.io/github/watchers/nwjun/fopShowcase.svg?style=social&label=Watch&style=plastic)]() [![GitHub forks](https://img.shields.io/github/forks/nwjun/fopShowcase.svg?style=social&label=Fork&style=plastic)]()
 [![GitHub license](https://badgen.net/github/license/nwjun/fopShowcase)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 # :pushpin: Table of Contents
-- [:pushpin: Table of Contents](#pushpin-table-of-contents)
 - [:paperclip: Description](#paperclip-description)
 - [:bulb: Inspiration](#bulb-inspiration)
 - [:oncoming_automobile: RoadMap](#oncoming_automobile-roadmap)
