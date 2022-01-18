@@ -30,35 +30,39 @@ async function teamNameValidation(teamNameEle) {
     // globalThis.SCRIPT_ROOT is set in the "base.html"
     // it stores base URL to server
     const URL = globalThis.SCRIPT_ROOT + '/checkTeamName';
-    let text = teamNameEle.value
+    let text = teamNameEle.value.trim()
     let invalid = document.getElementsByClassName('invalid-feedback')[0]
     if (text.length != 0) {
         if (text.length < 3 || text.length > 20) {
             turnValidShowErrMsgIfNotValid(teamNameEle, false, 'Name must be 3-20 characters', invalid)
 
         } else {
-            let spinner = document.getElementById("spinnerTeamName")
-            // show spinner when checking with server 
-            // initially has display none, turning to block will show spinner
-            spinner.style.display = "block"
+            if (specialCharactersExist(text))
+                turnValidShowErrMsgIfNotValid(teamNameEle, false, 'Only characters A-Z, a-z, 0-9,_ and - are allowed!', invalid)
+            else {
+                let spinner = document.getElementById("spinnerTeamName")
+                // show spinner when checking with server 
+                // initially has display none, turning to block will show spinner
+                spinner.style.display = "block"
 
-            // sending GET request to server for checking availablity of team name
-            const response = await fetch(URL + '?teamName=' + teamName.value)
-                .then(data => { return data.json() })
-                .then(res => {
-                    result = res["result"]
+                // sending GET request to server for checking availablity of team name
+                const response = await fetch(URL + '?teamName=' + teamName.value)
+                    .then(data => { return data.json() })
+                    .then(res => {
+                        result = res["result"]
 
-                    if (result) {
-                        turnValidShowErrMsgIfNotValid(teamNameEle, true, '')
-                    } else {
-                        turnValidShowErrMsgIfNotValid(teamNameEle, false, 'Team name is taken. Please use another name', invalid)
-                    }
-                })
-                .catch(err => {
-                    turnValidShowErrMsgIfNotValid(teamNameEle, false, err, invalid)
-                })
-                // stop showing spinner when request is responsed
-                .finally(e => { spinner.style.display = "none" })
+                        if (result) {
+                            turnValidShowErrMsgIfNotValid(teamNameEle, true, '')
+                        } else {
+                            turnValidShowErrMsgIfNotValid(teamNameEle, false, 'Team name is taken. Please use another name', invalid)
+                        }
+                    })
+                    .catch(err => {
+                        turnValidShowErrMsgIfNotValid(teamNameEle, false, err, invalid)
+                    })
+                    // stop showing spinner when request is responsed
+                    .finally(e => { spinner.style.display = "none" })
+            }
         }
     } else {
         removeValidInvalidClass(teamNameEle)
@@ -69,7 +73,7 @@ function validateLength(element, min, max) {
     /**
     * function to validate length of element on client side
     */
-    let text = element.value
+    let text = element.value.trim()
     let length = text.length
     if (length < min || length > max) {
         return false
@@ -275,7 +279,8 @@ function descriptionValidation(element) {
      * function to validate description
      * description must be 20 - 500 characters
      */
-    count = element.value.length
+    text = element.value.trim()
+    count = text.length
     if (count != 0) {
         if (count < 20 || count > 500) {
             turnValidShowErrMsgIfNotValid(element, false)
@@ -293,4 +298,10 @@ function removeValidInvalidClass(element) {
      */
     element.classList.remove("is-invalid")
     element.classList.remove("is-valid")
+}
+
+function specialCharactersExist(text) {
+    const pattern = /[^a-zA-Z0-9_-]/g
+    if (text.match(pattern)) return true
+    return false
 }
