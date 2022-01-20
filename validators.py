@@ -37,7 +37,7 @@ def teamNameValidation(form, field):
     Check whether team name exists in database
     """
     
-    teamName = field.data.trim()
+    teamName = field.data.strip()
     if len(teamName) == 0:
         raise ValidationError("Team name cannot be blank!")
     havSpecialChar = re.search("[^a-zA-Z0-9_-]",teamName)
